@@ -966,6 +966,7 @@
         window.dispatchEvent(new Event('resize'));
 
         console.log('[TM] Блок шаблонов добавлен в форму');
+        hookAddButton();
         return true;
     }
 
@@ -980,6 +981,59 @@
         textarea.dispatchEvent(new Event('change', { bubbles: true }));
         // Фокус
         textarea.focus();
+    }
+
+    // ── Авто-установка статуса "Ответ" при клике на "Добавить" ──────
+    function hookAddButton() {
+        var btns = document.querySelectorAll('.x-btn-inner');
+        for (var i = 0; i < btns.length; i++) {
+            if (btns[i].textContent.trim() === 'Добавить') {
+                var btn = btns[i].closest('.x-btn');
+                if (btn && !btn._tm_hooked) {
+                    btn._tm_hooked = true;
+                    btn.addEventListener('click', function() {
+                        setStatusToAnswer();
+                    });
+                    console.log('[TM] ✅ Хук на кнопку "Добавить" — статус → Ответ');
+                }
+                break;
+            }
+        }
+    }
+
+    function setStatusToAnswer() {
+        try {
+            var pageExt = (typeof unsafeWindow !== 'undefined') ? unsafeWindow.Ext : null;
+            if (pageExt) {
+                var combos = pageExt.ComponentQuery.query('combobox[name="status_id"]');
+                if (combos && combos.length > 0) {
+                    var combo = combos[0];
+                    var store = combo.getStore();
+                    if (store) {
+                        var idx = store.findExact('text', 'Ответ');
+                        if (idx !== -1) {
+                            var record = store.getAt(idx);
+                            combo.setValue(record.get('value') || record.get('id'));
+                            console.log('[TM] ✅ Статус → Ответ (ExtJS)');
+                            return;
+                        }
+                    }
+                    combo.setValue('Ответ');
+                    console.log('[TM] ✅ Статус → Ответ (ExtJS fallback)');
+                    return;
+                }
+            }
+            // DOM fallback
+            var statusInput = document.querySelector('input[name="status_id"]');
+            if (statusInput && !statusInput.readOnly) {
+                statusInput.value = 'Ответ';
+                statusInput.dispatchEvent(new Event('input', { bubbles: true }));
+                statusInput.dispatchEvent(new Event('change', { bubbles: true }));
+                console.log('[TM] ✅ Статус → Ответ (DOM)');
+            }
+        } catch(e) {
+            console.log('[TM] Ошибка установки статуса:', e.message);
+        }
     }
 
     // ==================================================================
