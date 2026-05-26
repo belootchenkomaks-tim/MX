@@ -967,6 +967,7 @@
 
         console.log('[TM] Блок шаблонов добавлен в форму');
         hookAddButton();
+        setStatusToAnswer();
         return true;
     }
 
@@ -981,9 +982,11 @@
         textarea.dispatchEvent(new Event('change', { bubbles: true }));
         // Фокус
         textarea.focus();
+        // Ставим статус "Ответ"
+        setStatusToAnswer();
     }
 
-    // ── Авто-установка статуса "Ответ" при клике на "Добавить" ──────
+    // ── Авто-установка статуса "Ответ" ─────────────────────────────
     function hookAddButton() {
         var btns = document.querySelectorAll('.x-btn-inner');
         for (var i = 0; i < btns.length; i++) {
@@ -991,10 +994,11 @@
                 var btn = btns[i].closest('.x-btn');
                 if (btn && !btn._tm_hooked) {
                     btn._tm_hooked = true;
-                    btn.addEventListener('click', function() {
+                    // Используем mousedown — срабатывает ДО обработчика ExtJS
+                    btn.addEventListener('mousedown', function() {
                         setStatusToAnswer();
                     });
-                    console.log('[TM] ✅ Хук на кнопку "Добавить" — статус → Ответ');
+                    console.log('[TM] ✅ Хук на кнопку "Добавить" (mousedown)');
                 }
                 break;
             }
@@ -1005,31 +1009,55 @@
         try {
             var pageExt = (typeof unsafeWindow !== 'undefined') ? unsafeWindow.Ext : null;
             if (pageExt) {
+                // Ищем combobox по name через ExtJS ComponentQuery
                 var combos = pageExt.ComponentQuery.query('combobox[name="status_id"]');
                 if (combos && combos.length > 0) {
                     var combo = combos[0];
                     var store = combo.getStore();
                     if (store) {
+                        // Ищем запись с отображаемым текстом "Ответ"
                         var idx = store.findExact('text', 'Ответ');
                         if (idx !== -1) {
                             var record = store.getAt(idx);
                             combo.setValue(record.get('value') || record.get('id'));
-                            console.log('[TM] ✅ Статус → Ответ (ExtJS)');
+                            console.log('[TM] ✅ Статус → Ответ (ExtJS store)');
+                            return;
+                        }
+                        // Если текст не найден — ищем по value
+                        var idx2 = store.findExact('value', 'Ответ');
+                        if (idx2 !== -1) {
+                            combo.setValue('Ответ');
+                            console.log('[TM] ✅ Статус → Ответ (ExtJS value)');
                             return;
                         }
                     }
+                    // Если store недоступен — пробуем setValue напрямую
                     combo.setValue('Ответ');
-                    console.log('[TM] ✅ Статус → Ответ (ExtJS fallback)');
+                    console.log('[TM] ✅ Статус → Ответ (ExtJS direct)');
                     return;
                 }
+
+                // Fallback: ищем компонент через componentid
+                var statusInput = document.querySelector('input[name="status_id"]');
+                if (statusInput) {
+                    var cid = statusInput.getAttribute('componentid');
+                    if (cid) {
+                        var cmp = pageExt.getCmp(cid);
+                        if (cmp) {
+                            cmp.setValue('Ответ');
+                            console.log('[TM] ✅ Статус → Ответ (ExtJS getCmp)');
+                            return;
+                        }
+                    }
+                }
             }
-            // DOM fallback
+            // DOM fallback: просто пишем в поле и триггерим события
             var statusInput = document.querySelector('input[name="status_id"]');
-            if (statusInput && !statusInput.readOnly) {
+            if (statusInput) {
                 statusInput.value = 'Ответ';
                 statusInput.dispatchEvent(new Event('input', { bubbles: true }));
                 statusInput.dispatchEvent(new Event('change', { bubbles: true }));
-                console.log('[TM] ✅ Статус → Ответ (DOM)');
+                console.log('[TM] ✅ Статус → Ответ (DOM input)');
             }
         } catch(e) {
             console.log('[TM] Ошибка установки статуса:', e.message);
