@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CabTools
 // @namespace    http://tampermonkey.net/
-// @version      1.8
+// @version      2.0
 // @description  Добавляет кнопки и шаблоны на billing + авто-заполнение / фоновое создание ТТ на Forest
 // @author       MX
 // @match        https://billing.timernet.ru/*
