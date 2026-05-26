@@ -1,13 +1,16 @@
 // ==UserScript==
 // @name         CabTools
 // @namespace    http://tampermonkey.net/
-// @version      1.7
+// @version      1.8
 // @description  Добавляет кнопки и шаблоны на billing + авто-заполнение / фоновое создание ТТ на Forest
 // @author       MX
 // @match        https://billing.timernet.ru/*
 // @match        https://forest.timernet.ru/service-desk/tt/create*
 // @match        https://forest.timernet.ru/technical-support/network/index*
 // @icon         https://billing.timernet.ru/favicon.ico
+// @updateURL    https://raw.githubusercontent.com/belootchenkomaks-tim/MX/main/timernet-incidents.user.js
+// @downloadURL  https://raw.githubusercontent.com/belootchenkomaks-tim/MX/main/timernet-incidents.user.js
+// @supportURL   https://github.com/belootchenkomaks-tim/MX
 // @grant        GM_xmlhttpRequest
 // @grant        GM_openInTab
 // @grant        GM_setValue
