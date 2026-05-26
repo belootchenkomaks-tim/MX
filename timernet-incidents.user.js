@@ -648,7 +648,23 @@
                 '\ud83c\udf33 Создать ТТ',
                 '',
                 function() {
+                    // ── Блокируем кнопку от повторных нажатий ────────────
+                    var _forestBtn = btnForest;
+                    _forestBtn.style.opacity = '0.5';
+                    _forestBtn.style.pointerEvents = 'none';
+                    var _innerSpan = _forestBtn.querySelector('.x-btn-inner');
+                    if (_innerSpan) _innerSpan.textContent = '⏳ Создание…';
+                    function _enableForestBtn() {
+                        _forestBtn.style.opacity = '';
+                        _forestBtn.style.pointerEvents = '';
+                        if (_innerSpan) _innerSpan.textContent = '🌳 Создать ТТ';
+                    }
+                    // Авто-разблокировка через 7 сек (страховка)
+                    var _unlockTimer = setTimeout(_enableForestBtn, 7000);
+
                     if (!currentTTId) {
+                        clearTimeout(_unlockTimer);
+                        _enableForestBtn();
                         alert('Сначала откройте ТТ (кликните по заголовку в списке)');
                         return;
                     }
@@ -700,6 +716,8 @@
                         var authorId = findAuthorIdFromStore();
                         if (authorId) {
                             startAsyncContractSearch(authorId);
+                            clearTimeout(_unlockTimer);
+                            _enableForestBtn();
                             alert('🌳 Ищу договор через API...\nПодождите пару секунд и нажмите "Создать ТТ" ещё раз.');
                             return; // Не открываем Forest сейчас
                         } else {
@@ -710,6 +728,8 @@
                     } else {
                         // API уже выполняется
                         console.log('[TM] 🌳 Договор ещё не получен (API в процессе)');
+                        clearTimeout(_unlockTimer);
+                        _enableForestBtn();
                         alert('🌳 Договор ещё загружается...\nПодождите пару секунд и нажмите "Создать ТТ" ещё раз.');
                         return; // Не открываем Forest
                     }
