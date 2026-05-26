@@ -1643,12 +1643,14 @@
                 });
             });
 
-            // ── Загрузка сохранённого шаблона ─────────────────────
+            // ── Загрузка сохранённого шаблона (или значения по умолчанию) ──
+            var defaultDesc = 'Ответ на ЛК:{TT_NUM} - {CLIENT_MSG}';
+            var defaultSol = '{ADMIN_MSG}';
             var savedDesc = GM_getValue('tm_forest_msg_tpl');
             var savedSol = GM_getValue('tm_forest_sol_tpl');
-            if (savedDesc) document.getElementById('tm-forest-desc').value = savedDesc;
-            if (savedSol) document.getElementById('tm-forest-sol').value = savedSol;
-            if (savedDesc || savedSol) updateForestPreview();
+            document.getElementById('tm-forest-desc').value = savedDesc || defaultDesc;
+            document.getElementById('tm-forest-sol').value = savedSol || defaultSol;
+            updateForestPreview();
 
             // ── Кнопка 💾 Сохранить ───────────────────────────────
             document.getElementById('tm-forest-save').addEventListener('click', function() {
